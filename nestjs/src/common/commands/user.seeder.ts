@@ -1,22 +1,49 @@
 import { NestFactory } from '@nestjs/core';
 import { join } from 'path';
 import { AppModule } from '../../app.module';
-import { User } from '../../entities/user.entity';
 import { Logger } from '@nestjs/common';
 import { UserService } from '../../user/user.service';
+import { User } from '../../entities';
+
+const users: Omit<User, 'id' | 'cv'>[] = [
+  {
+    userName: 'houssem',
+    email: 'houssem@gmail.com',
+    password: 'houssem',
+  },
+  {
+    userName: 'medAmineGdoura',
+    email: 'gdoura@gmail.com',
+    password: 'gdoura',
+  },
+  {
+    userName: 'hups',
+    email: 'khelil@gmail.com',
+    password: 'khelil',
+  },
+  {
+    userName: 'mehdi',
+    email: 'fkih@gmail.com',
+    password: 'fkih',
+  },
+  {
+    userName: 'mahdi02ch',
+    email: 'mahdi@gmail.com',
+    password: 'mahdi',
+  },
+];
+
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const userService = app.get(UserService);
   try {
-    const user = new User();
-    user.userName = 'admin';
-    user.password = 'admin';
-    user.email = 'admin@gmail.com';
-    await userService.create(user);
+    const promises = users.map((user) => {
+      return userService.create(user);
+    });
+    await Promise.all(promises);
   } catch (e) {
-    Logger.error(`Erro while seeding user: ${e.message}`);
-  } finally {
-    await app.close();
+    Logger.error(`Error while seeding user: ${e.message}`);
   }
+  app.close();
 }
 bootstrap();

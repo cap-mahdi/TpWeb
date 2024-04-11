@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DeepPartial, Repository, UpdateResult } from 'typeorm';
+import {
+  DeepPartial,
+  FindManyOptions,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { HasId } from '../interfaces/hasId.interface';
 
 @Injectable()
@@ -7,8 +12,6 @@ export class CrudService<Entity extends HasId> {
   constructor(private repository: Repository<Entity>) {}
 
   async create(entity: DeepPartial<Entity>): Promise<Entity> {
-    console.log('User ', entity);
-    console.log('Repo', this.repository);
     return this.repository.save(entity);
   }
 
@@ -38,8 +41,8 @@ export class CrudService<Entity extends HasId> {
     return result;
   }
 
-  findAll(): Promise<Entity[]> {
-    return this.repository.find();
+  findAll(findManyOptions: FindManyOptions<Entity> = {}): Promise<Entity[]> {
+    return this.repository.find(findManyOptions);
   }
 
   findOne(id: any): Promise<Entity | null> {

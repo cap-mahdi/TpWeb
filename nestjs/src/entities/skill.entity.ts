@@ -6,7 +6,9 @@ export class Skill {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   designation: string;
 
   @ManyToMany(() => Cv, (cv) => cv.skills)
