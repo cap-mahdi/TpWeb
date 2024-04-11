@@ -1,7 +1,4 @@
 import { NestFactory } from '@nestjs/core';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { join } from 'path';
-import { Repository } from 'typeorm';
 import { AppModule } from '../../app.module';
 import { User } from '../../entities/user.entity';
 import { Logger } from '@nestjs/common';
