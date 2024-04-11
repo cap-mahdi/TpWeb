@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { join } from 'path';
 import { AppModule } from '../../app.module';
 import { User } from '../../entities/user.entity';
 import { Logger } from '@nestjs/common';

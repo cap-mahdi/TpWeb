@@ -7,8 +7,7 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { User } from './user.entity';
-import { Skill } from './skill.entity';
+import { User, Skill } from './';
 
 @Entity()
 export class Cv {

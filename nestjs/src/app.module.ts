@@ -16,7 +16,7 @@ import { User, Cv, Skill } from './entities';
       type: 'postgres',
       url: 'postgres://postgres.grtubrwhpvubmoqgexnc:X7TFIm6g8EaGGy70@aws-0-eu-central-1.pooler.supabase.com:5432/postgres',
       // entities: [User, Cv, Skill],
-      // synchronize: true,
+      synchronize: true,
       autoLoadEntities: true,
     }),
   ],
