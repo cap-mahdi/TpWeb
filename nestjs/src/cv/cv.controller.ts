@@ -6,7 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Post, UploadedFile, UseInterceptors, Post, ParseFilePipeBuilder, HttpStatus
+  UploadedFile, UseInterceptors, Post, ParseFilePipeBuilder, HttpStatus
 } from '@nestjs/common';
 import { CvService } from './cv.service';
 import { Cv } from 'src/entities';
