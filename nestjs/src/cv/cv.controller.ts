@@ -1,6 +1,5 @@
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as fs from 'fs-extra';
-import { join } from 'path';
+
 
 import {
   Body,
@@ -28,14 +27,16 @@ import { User } from 'src/entities';
 
 @Controller('cv')
 export class CvController {
-  @UseGuards(AuthGuard('jwt'), AdminGuard)
-  @Get()
+  @UseGuards(AuthGuard('jwt'),
+    // AdminGuard
+  )
+  @Get("hello")
   hello(@GetUser() user: User): string {
     console.log('from controller : ', user);
     return 'hello';
   }
 
-  constructor(private readonly cvService: CvService) {}
+  constructor(private readonly cvService: CvService) { }
 
   @Get()
   async getAllCv(): Promise<Cv[]> {
@@ -46,9 +47,16 @@ export class CvController {
   async getCvById(@Param('id', ParseIntPipe) id: number): Promise<Cv> {
     return this.cvService.findOne(id);
   }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async createCv(@Body() NewCv: CreateNewCvDto): Promise<Cv> {
-    return await this.cvService.create(NewCv);
+  async createCv(
+    @GetUser() user: User,
+    @Body() NewCv: CreateNewCvDto
+  ): Promise<Cv> {
+    console.log({ user });
+
+    return await this.cvService.createCv(NewCv, user);
   }
 
   @Patch(':id')
@@ -64,14 +72,7 @@ export class CvController {
     return await this.cvService.remove(id);
   }
 
-  @Post('/:cvId/:skillId')
-  async addSKill(
-    @Param('cvId', ParseIntPipe) cvId: number,
-    @Param('skillId', ParseIntPipe) skillId: number,
-  ): Promise<Cv> {
-    return await this.cvService.addSKill(cvId, skillId);
-  }
-  @Post('upload')
+  @Post(':id/upload')
   @UseInterceptors(FileInterceptor('file'))
   public async uploadImage(
     @UploadedFile(
@@ -81,15 +82,17 @@ export class CvController {
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file,
+    @Param('id', ParseIntPipe) id: number
   ) {
-    const fileName = file.originalname;
-    const filePath = join(process.cwd(), 'public', fileName);
-
-    try {
-      await fs.writeFile(filePath, file.buffer);
-      return { success: true, message: 'File uploaded successfully.' };
-    } catch (error) {
-      return { success: false, message: 'Failed to upload file.' };
-    }
+    return this.cvService.uploadPhoto(id, file)
   }
+
+  @Post('/:cvId/:skillId')
+  async addSKill(
+    @Param('cvId', ParseIntPipe) cvId: number,
+    @Param('skillId', ParseIntPipe) skillId: number,
+  ): Promise<Cv> {
+    return await this.cvService.addSKill(cvId, skillId);
+  }
+
 }
