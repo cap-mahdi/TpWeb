@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CrudService } from '../common/services/crud.service';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
@@ -16,6 +16,9 @@ export class UserService extends CrudService<User> {
   }
 
   async create(createUserDto: CreateUserDTO): Promise<User> {
+    const userWithSameEmail = await this.userRepository.findOne({ where: { email: createUserDto.email } })
+    if (userWithSameEmail)
+      throw new BadRequestException("there is a user with the same email")
     const salt = await bcrypt.genSalt();
     createUserDto.password = await bcrypt.hash(createUserDto.password, salt);
 

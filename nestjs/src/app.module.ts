@@ -6,23 +6,30 @@ import { CvModule } from './cv/cv.module';
 import { SkillModule } from './skill/skill.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     UserModule,
     CvModule,
     SkillModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: 'postgres://postgres.grtubrwhpvubmoqgexnc:X7TFIm6g8EaGGy70@aws-0-eu-central-1.pooler.supabase.com:5432/postgres',
-      migrations: ['dist/migrations/*{.ts,.js}'],
-      synchronize: true,
-      autoLoadEntities: true,
-    }),
     AuthModule,
     UserModule,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        url: configService.get<string>('DATABASE_URL'),
+        type: 'postgres',
+        synchronize: true,
+        autoLoadEntities: true,
+      }),
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
