@@ -12,4 +12,6 @@ export class CvService extends CrudService<Cv> {
   ) {
     super(cvRepository);
   }
+
+
 }
