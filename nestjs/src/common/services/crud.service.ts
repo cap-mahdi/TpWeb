@@ -41,8 +41,8 @@ export class CrudService<Entity extends HasId> {
     return result;
   }
 
-  findAll(findManyOptions: FindManyOptions<Entity> = {}): Promise<Entity[]> {
-    return this.repository.find(findManyOptions);
+  findAll(): Promise<Entity[]> {
+    return this.repository.find();
   }
 
   findOne(id: any): Promise<Entity | null> {

@@ -19,9 +19,7 @@ async function bootstrap() {
 
   const cvService = app.get(CvService);
   try {
-    const cvs = await cvService.findAll({
-      relations: ['skills', 'user'],
-    });
+    const cvs = await cvService.findAll();
     for (let cv of cvs) {
     }
   } catch (e) {
