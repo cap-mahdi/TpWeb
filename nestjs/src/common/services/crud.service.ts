@@ -1,10 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  DeepPartial,
-  FindManyOptions,
-  Repository,
-  UpdateResult,
-} from 'typeorm';
+import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { HasId } from '../interfaces/hasId.interface';
 
 @Injectable()
@@ -23,29 +18,28 @@ export class CrudService<Entity extends HasId> {
     if (!entity) {
       throw new NotFoundException('entity Not Found');
     }
+    console.log('entity', entity);
+
     return this.repository.save(entity);
   }
 
-  async remove(id: number): Promise<UpdateResult> {
-    const result = await this.repository.softDelete(id);
-    if (!result.affected) {
+  async remove(id: any): Promise<Entity> {
+    const cvToRemove = await this.findOne(id);
+    if (!cvToRemove) {
       throw new NotFoundException('entity Not Found');
     }
-    return result;
-  }
-  async restore(id: number): Promise<UpdateResult> {
-    const result = await this.repository.restore(id);
-    if (!result.affected) {
-      throw new NotFoundException('entity Not Found');
-    }
-    return result;
+    return this.repository.remove(cvToRemove);
   }
 
   findAll(): Promise<Entity[]> {
     return this.repository.find();
   }
 
-  findOne(id: any): Promise<Entity | null> {
-    return this.repository.findOneBy({ id });
+  async findOne(id: any): Promise<Entity | null> {
+    const entity = await this.repository.findOne({ where: { id } });
+    if (!entity) {
+      throw new NotFoundException('entity Not Found');
+    }
+    return entity;
   }
 }
