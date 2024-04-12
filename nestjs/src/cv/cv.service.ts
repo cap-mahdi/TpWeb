@@ -15,6 +15,7 @@ export class CvService extends CrudService<Cv> {
     super(cvRepository);
   }
 
+
   async addSKill(cvId: number, skillId: number): Promise<Cv> {
     const cv = await this.cvRepository.findOne({ where: { id: cvId } });
     if (!cv) {
