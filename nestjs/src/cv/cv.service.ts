@@ -33,4 +33,6 @@ export class CvService extends CrudService<Cv> {
       .add(skillId)
       .then(() => this.findOne(cvId));
   }
+
+
 }
