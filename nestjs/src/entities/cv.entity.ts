@@ -29,7 +29,7 @@ export class Cv {
   @Column()
   job: string;
 
-  @Column()
+  @Column({ nullable: true })
   path: string;
 
   @ManyToOne(() => User, (user) => user.cv)
