@@ -4,6 +4,8 @@ import { AppModule } from '../../app.module';
 import { Logger } from '@nestjs/common';
 import { UserService } from '../../user/user.service';
 import { User } from '../../entities';
+import * as bcrypt from 'bcryptjs';
+
 
 const users: Omit<User, 'id' | 'cv' | 'role'>[] = [
   {
@@ -37,7 +39,9 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const userService = app.get(UserService);
   try {
-    const promises = users.map((user) => {
+    const promises = users.map(async (user) => {
+      const salt = await bcrypt.genSalt();
+      user.password = await bcrypt.hash(user.password, salt);
       return userService.create(user);
     });
     await Promise.all(promises);
