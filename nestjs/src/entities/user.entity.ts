@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Cv } from './';
 import { UserRole } from '../user/dto/userRole.dto';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -17,7 +18,9 @@ export class User {
   })
   email: string;
 
-  @Column()
+  @Column({
+    select: false,
+  })
   password: string;
 
   @OneToMany(() => Cv, (cv) => cv.user)

@@ -10,10 +10,8 @@ import { ConfigService } from '@nestjs/config';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private userService: UserService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
-    console.log(configService.get<string>('ACCESS_TOKEN_SECRET'));
-
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -21,10 +19,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: PayloadInterface) {
-    const user = this.userService.find({ email: payload.email });
+    console.log('payload ', payload);
+    const user = await this.userService.find({ email: payload.email });
+
     if (!user) {
       throw new UnauthorizedException();
     }
+    delete user.password;
     return user;
   }
 }

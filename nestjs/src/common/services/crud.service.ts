@@ -18,7 +18,6 @@ export class CrudService<Entity extends HasId> {
     if (!entity) {
       throw new NotFoundException('entity Not Found');
     }
-    console.log('entity', entity);
 
     return this.repository.save(entity);
   }

@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { CvModule } from './cv/cv.module';
 import { SkillModule } from './skill/skill.module';
@@ -26,10 +24,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

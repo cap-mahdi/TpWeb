@@ -14,6 +14,7 @@ import {
   UseInterceptors,
   ParseFilePipeBuilder,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CvService } from './cv.service';
 import { Cv } from '../entities';
@@ -21,36 +22,29 @@ import { CreateNewCvDto } from './dto/create-new-cv.dto';
 import { UpdateCvDto } from './dto/Update-cv.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/decorators/user.decorator';
-import { AdminGuard } from '../auth/guards/admin.guard';
 import { User } from '../entities';
+import { PaginationCvDto } from './dto/pagination-cv.dto';
+import { CvCriteriaDto } from './dto/get-cv-criteria.dto';
 
 @Controller('cv')
 @UseGuards(AuthGuard('jwt'))
 export class CvController {
-  @UseGuards(
-    AuthGuard('jwt'),
-    // AdminGuard
-  )
-  @Get('hello')
-  hello(@GetUser() user: User): string {
-    console.log('from controller : ', user);
-    return 'hello';
-  }
-
   constructor(private readonly cvService: CvService) {}
-
-  @Get(':page/:limit')
+  @Get()
   async getAllCv(
-    @Param('page', ParseIntPipe) page: number,
-    @Param('limit', ParseIntPipe) limit: number,
     @GetUser() user: User,
+    @Query() { limit, page }: PaginationCvDto,
+    @Query() { age, criteria }: CvCriteriaDto,
   ): Promise<Cv[]> {
-    return this.cvService.findAll(page, limit, user);
+    return this.cvService.findAll(user, page, limit, age, criteria);
   }
 
   @Get(':id')
-  async getCvById(@Param('id', ParseIntPipe) id: number): Promise<Cv> {
-    return this.cvService.findOne(id);
+  async getCvById(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ): Promise<Cv> {
+    return this.cvService.findOne(id, user);
   }
 
   @Post()

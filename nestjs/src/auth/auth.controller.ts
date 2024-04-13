@@ -11,6 +11,7 @@ export class AuthController {
     private userService: UserService,
     private authService: AuthService,
   ) {}
+
   @Post('signup')
   signup(
     @Body()
