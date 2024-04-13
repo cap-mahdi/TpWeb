@@ -72,7 +72,7 @@ export class CvController {
     return await this.cvService.remove(id);
   }
 
-  @Post(':id/upload')
+  @Patch('upload/:id')
   @UseInterceptors(FileInterceptor('file'))
   public async uploadImage(
     @UploadedFile(

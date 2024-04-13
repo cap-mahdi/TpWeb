@@ -51,7 +51,6 @@ export class CvService extends CrudService<Cv> {
     if (!foundCv)
       throw new NotFoundException()
 
-    console.log(file);
 
     const fileName = Date.now() + file.originalname;
     const filePath = join(process.cwd(), 'public/uploads', fileName);
