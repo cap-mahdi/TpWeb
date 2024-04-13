@@ -1,6 +1,5 @@
 import { FileInterceptor } from '@nestjs/platform-express';
 
-
 import {
   Body,
   Controller,
@@ -27,16 +26,17 @@ import { User } from '../entities';
 
 @Controller('cv')
 export class CvController {
-  @UseGuards(AuthGuard('jwt'),
+  @UseGuards(
+    AuthGuard('jwt'),
     // AdminGuard
   )
-  @Get("hello")
+  @Get('hello')
   hello(@GetUser() user: User): string {
     console.log('from controller : ', user);
     return 'hello';
   }
 
-  constructor(private readonly cvService: CvService) { }
+  constructor(private readonly cvService: CvService) {}
 
   @Get()
   async getAllCv(): Promise<Cv[]> {
@@ -52,10 +52,8 @@ export class CvController {
   @Post()
   async createCv(
     @GetUser() user: User,
-    @Body() NewCv: CreateNewCvDto
+    @Body() NewCv: CreateNewCvDto,
   ): Promise<Cv> {
-    console.log({ user });
-
     return await this.cvService.createCv(NewCv, user);
   }
 
@@ -82,9 +80,9 @@ export class CvController {
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file,
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.cvService.uploadPhoto(id, file)
+    return this.cvService.uploadPhoto(id, file);
   }
 
   @Post('/:cvId/:skillId')
@@ -94,5 +92,4 @@ export class CvController {
   ): Promise<Cv> {
     return await this.cvService.addSKill(cvId, skillId);
   }
-
 }
