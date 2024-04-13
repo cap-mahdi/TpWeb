@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 import { UserService } from '../../user/user.service';
 import { User } from '../../entities';
 
-const users: Omit<User, 'id' | 'cv'>[] = [
+const users: Omit<User, 'id' | 'cv' | 'role'>[] = [
   {
     userName: 'houssem',
     email: 'houssem@gmail.com',

@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CrudService } from '../common/services/crud.service';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cv, Skill } from '../entities';
+import { Cv, Skill, User } from '../entities';
+import * as fs from 'fs-extra';
+import { join } from 'path';
+import { CreateNewCvDto } from './dto/create-new-cv.dto';
 
 @Injectable()
 export class CvService extends CrudService<Cv> {
@@ -11,8 +14,20 @@ export class CvService extends CrudService<Cv> {
     private cvRepository: Repository<Cv>,
     @InjectRepository(Skill)
     private skillRepository: Repository<Skill>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {
     super(cvRepository);
+  }
+
+  async createCv(createNewCvDto: CreateNewCvDto, userId: number) {
+    const user = await this.userRepository.findOneBy({ id: userId })
+    const newCv = await this.cvRepository.create({
+      ...createNewCvDto,
+      user
+    })
+    const savedCv = await this.cvRepository.save(newCv)
+    return savedCv
   }
 
   async addSKill(cvId: number, skillId: number): Promise<Cv> {
@@ -34,5 +49,26 @@ export class CvService extends CrudService<Cv> {
       .then(() => this.findOne(cvId));
   }
 
+  async uploadPhoto(id: number, file) {
+    const foundCv = await this.cvRepository.findOne({ where: { id } })
+    if (!foundCv)
+      throw new NotFoundException()
+
+    console.log(file);
+
+    const fileName = Date.now() + file.originalname;
+    const filePath = join(process.cwd(), 'public/uploads', fileName);
+
+    try {
+      await fs.writeFile(filePath, file.buffer);
+      foundCv.path = fileName
+      await this.cvRepository.save(foundCv)
+      return { success: true, message: 'File uploaded successfully.', cv: foundCv };
+    } catch (error) {
+      console.error(error);
+
+      return { success: false, message: 'Failed to upload file.' };
+    }
+  }
 
 }

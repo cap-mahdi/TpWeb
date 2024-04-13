@@ -1,12 +1,15 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Cv } from './';
+import { UserRole } from '../user/dto/userRole.dto';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   userName: string;
 
   @Column({
@@ -14,9 +17,12 @@ export class User {
   })
   email: string;
 
-  @Column({ select: false })
+  @Column()
   password: string;
 
   @OneToMany(() => Cv, (cv) => cv.user)
   cv: Cv[];
+
+  @Column()
+  role: UserRole;
 }

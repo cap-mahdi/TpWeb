@@ -1,9 +1,7 @@
-import { Inject, Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
+import { Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { JwtModule, JwtService } from "@nestjs/jwt";
-import { log } from "console";
+import { JwtService } from "@nestjs/jwt";
 import { NextFunction, Request, Response } from "express";
-import { User } from "src/entities";
 
 @Injectable()
 export class AutheticationMiddleware implements NestMiddleware {
@@ -26,7 +24,8 @@ export class AutheticationMiddleware implements NestMiddleware {
                 }
             );
             req['userId'] = payload.sub;
-            log(payload)
+            console.log({ payload });
+
         } catch {
             throw new UnauthorizedException();
         }

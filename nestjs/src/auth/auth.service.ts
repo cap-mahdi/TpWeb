@@ -21,9 +21,10 @@ export class AuthService {
         })
         if (!foundUser)
             throw new BadRequestException("wrong credentials")
-        // TODO: hash password
-        // const isMatch = await bcrypt.compare(loginDto.password, foundUser.password);
-        const isMatch = loginDto.password === foundUser.password
+        const isMatch = await bcrypt.compare(
+            loginDto.password,
+            foundUser.password,
+        );
         if (!isMatch)
             throw new BadRequestException("wrong credentials")
         const payload = { sub: foundUser.id, username: loginDto.email };
