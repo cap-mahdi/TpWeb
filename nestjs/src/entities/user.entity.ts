@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Cv } from './';
-import { UserRole } from 'src/user/dto/userRole.dto';
+import { UserRole } from '../user/dto/userRole.dto';
 
 @Entity()
 export class User {

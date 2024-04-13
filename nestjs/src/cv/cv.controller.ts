@@ -18,13 +18,13 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { CvService } from './cv.service';
-import { Cv } from 'src/entities';
+import { Cv } from '../entities';
 import { CreateNewCvDto } from './dto/create-new-cv.dto';
 import { UpdateCvDto } from './dto/Update-cv.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from 'src/auth/decorators/user.decorator';
-import { AdminGuard } from 'src/auth/guards/admin.guard';
-import { User } from 'src/entities';
+import { GetUser } from '../auth/decorators/user.decorator';
+import { AdminGuard } from '../auth/guards/admin.guard';
+import { User } from '../entities';
 
 @Controller('cv')
 export class CvController {

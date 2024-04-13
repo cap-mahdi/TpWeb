@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
-import { UserRole } from 'src/user/dto/userRole.dto';
+import { UserRole } from '../../user/dto/userRole.dto';
 @Injectable()
 export class AdminGuard implements CanActivate {
   canActivate(
