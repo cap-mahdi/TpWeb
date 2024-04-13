@@ -8,7 +8,13 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use('/public/', express.static(join(__dirname, '..', 'public')));
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
   await app.listen(3000);
   Logger.log(`Server running on http://localhost:3000`);
 }
