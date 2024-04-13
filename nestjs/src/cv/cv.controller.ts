@@ -25,11 +25,12 @@ import { GetUser } from '../auth/decorators/user.decorator';
 import { User } from '../entities';
 import { PaginationCvDto } from './dto/pagination-cv.dto';
 import { CvCriteriaDto } from './dto/get-cv-criteria.dto';
+import { CvOwnerGuard } from 'src/auth/guards/cv-owner.guard';
 
 @Controller('cv')
 @UseGuards(AuthGuard('jwt'))
 export class CvController {
-  constructor(private readonly cvService: CvService) {}
+  constructor(private readonly cvService: CvService) { }
   @Get()
   async getAllCv(
     @GetUser() user: User,
@@ -55,6 +56,7 @@ export class CvController {
     return await this.cvService.createCv(NewCv, user);
   }
 
+  @UseGuards(CvOwnerGuard)
   @Patch(':id')
   async updateCv(
     @Body() updatecv: UpdateCvDto,
@@ -63,11 +65,13 @@ export class CvController {
     return await this.cvService.update(id, updatecv);
   }
 
+  @UseGuards(CvOwnerGuard)
   @Delete(':id')
   async deleteCv(@Param('id', ParseIntPipe) id: number) {
     return await this.cvService.remove(id);
   }
 
+  @UseGuards(CvOwnerGuard)
   @Patch('upload/:id')
   @UseInterceptors(FileInterceptor('file'))
   public async uploadImage(

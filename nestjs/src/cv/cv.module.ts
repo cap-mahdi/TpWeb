@@ -9,5 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
   controllers: [CvController],
   providers: [CvService],
+  exports: [CvService]
 })
-export class CvModule {}
+export class CvModule { }
