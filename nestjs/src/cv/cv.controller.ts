@@ -15,6 +15,7 @@ import {
   ParseFilePipeBuilder,
   HttpStatus,
   Query,
+  Put,
 } from '@nestjs/common';
 import { CvService } from './cv.service';
 import { Cv } from '../entities';
@@ -30,7 +31,7 @@ import { CvOwnerGuard } from 'src/auth/guards/cv-owner.guard';
 @Controller('cv')
 @UseGuards(AuthGuard('jwt'))
 export class CvController {
-  constructor(private readonly cvService: CvService) { }
+  constructor(private readonly cvService: CvService) {}
   @Get()
   async getAllCv(
     @GetUser() user: User,
@@ -57,7 +58,7 @@ export class CvController {
   }
 
   @UseGuards(CvOwnerGuard)
-  @Patch(':id')
+  @Put(':id')
   async updateCv(
     @Body() updatecv: UpdateCvDto,
     @Param('id', ParseIntPipe) id: number,
@@ -72,7 +73,7 @@ export class CvController {
   }
 
   @UseGuards(CvOwnerGuard)
-  @Patch('upload/:id')
+  @Patch(':id/upload')
   @UseInterceptors(FileInterceptor('file'))
   public async uploadImage(
     @UploadedFile(

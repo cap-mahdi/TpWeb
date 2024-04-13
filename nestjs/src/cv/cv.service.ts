@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -99,17 +100,14 @@ export class CvService extends CrudService<Cv> {
 
     try {
       await fs.writeFile(filePath, file.buffer);
-      foundCv.path = fileName;
+      foundCv.path = `/public/uploads/${fileName}`;
+      // foundCv.path = foundCv.path.replace(/\s/g, '_');
+
       await this.cvRepository.save(foundCv);
-      return {
-        success: true,
-        message: 'File uploaded successfully.',
-        cv: foundCv,
-      };
+      return foundCv;
     } catch (error) {
       console.error(error);
-
-      return { success: false, message: 'Failed to upload file.' };
+      throw new InternalServerErrorException();
     }
   }
 }
