@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CrudService } from '../common/services/crud.service';
 import { DeepPartial, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +10,7 @@ import { Cv, Skill, User } from '../entities';
 import * as fs from 'fs-extra';
 import { join } from 'path';
 import { CreateNewCvDto } from './dto/create-new-cv.dto';
+import { UserRole } from '../user/dto/userRole.dto';
 
 @Injectable()
 export class CvService extends CrudService<Cv> {
@@ -18,13 +23,32 @@ export class CvService extends CrudService<Cv> {
     super(cvRepository);
   }
 
+  findAll(
+    page: number = 1,
+    limit: number = 10,
+    user: User = null,
+  ): Promise<Cv[]> {
+    if (user && user.role === UserRole.Admin) {
+      return this.cvRepository.find({
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+    } else {
+      return this.cvRepository.find({
+        where: { user },
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+    }
+  }
+
   async createCv(createNewCvDto: CreateNewCvDto, user: User) {
     const newCv = await this.cvRepository.create({
       ...createNewCvDto,
-      user
-    })
-    const savedCv = await this.cvRepository.save(newCv)
-    return savedCv
+      user,
+    });
+    const savedCv = await this.cvRepository.save(newCv);
+    return savedCv;
   }
 
   async addSKill(cvId: number, skillId: number): Promise<Cv> {
@@ -47,9 +71,8 @@ export class CvService extends CrudService<Cv> {
   }
 
   async uploadPhoto(id: number, file) {
-    const foundCv = await this.cvRepository.findOne({ where: { id } })
-    if (!foundCv)
-      throw new NotFoundException()
+    const foundCv = await this.cvRepository.findOne({ where: { id } });
+    if (!foundCv) throw new NotFoundException();
 
 
     const fileName = Date.now() + file.originalname;
@@ -57,14 +80,17 @@ export class CvService extends CrudService<Cv> {
 
     try {
       await fs.writeFile(filePath, file.buffer);
-      foundCv.path = fileName
-      await this.cvRepository.save(foundCv)
-      return { success: true, message: 'File uploaded successfully.', cv: foundCv };
+      foundCv.path = fileName;
+      await this.cvRepository.save(foundCv);
+      return {
+        success: true,
+        message: 'File uploaded successfully.',
+        cv: foundCv,
+      };
     } catch (error) {
       console.error(error);
 
       return { success: false, message: 'Failed to upload file.' };
     }
   }
-
 }

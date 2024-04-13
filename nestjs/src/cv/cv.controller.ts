@@ -25,6 +25,7 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { User } from '../entities';
 
 @Controller('cv')
+@UseGuards(AuthGuard('jwt'))
 export class CvController {
   @UseGuards(
     AuthGuard('jwt'),
@@ -38,9 +39,13 @@ export class CvController {
 
   constructor(private readonly cvService: CvService) {}
 
-  @Get()
-  async getAllCv(): Promise<Cv[]> {
-    return this.cvService.findAll();
+  @Get(':page/:limit')
+  async getAllCv(
+    @Param('page', ParseIntPipe) page: number,
+    @Param('limit', ParseIntPipe) limit: number,
+    @GetUser() user: User,
+  ): Promise<Cv[]> {
+    return this.cvService.findAll(page, limit, user);
   }
 
   @Get(':id')
@@ -48,7 +53,6 @@ export class CvController {
     return this.cvService.findOne(id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post()
   async createCv(
     @GetUser() user: User,
