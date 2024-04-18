@@ -1,0 +1,31 @@
+enum UserRole {
+  ADMIN
+  USER
+}
+
+type CV {
+  id: ID!
+  name: String!
+  age: Int!
+  job: String!
+  user: User!
+  skills: [Skill!]!
+}
+
+type Skill {
+  id: ID!
+  designation: String!
+}
+
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  role: UserRole!
+  cvs: [CV!]!
+}
+
+type Query {
+  cvs: [CV!]!
+  cv(id: ID!): CV!
+}
