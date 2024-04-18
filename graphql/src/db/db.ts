@@ -46,7 +46,7 @@ export const db = {
       name: "Fake CV 1",
       age: 25,
       job: "Web Developer",
-      user: 1,
+      owner: 1,
       skills: [1, 3, 4],
     },
     {
@@ -54,7 +54,7 @@ export const db = {
       name: "Fake CV 2",
       age: 28,
       job: "Frontend Developer",
-      user: 2,
+      owner: 2,
       skills: [2, 3, 4],
     },
     {
@@ -62,7 +62,7 @@ export const db = {
       name: "Fake CV 3",
       age: 30,
       job: "Backend Developer",
-      user: 3,
+      owner: 3,
       skills: [5, 6, 7],
     },
     {
@@ -70,7 +70,7 @@ export const db = {
       name: "Fake CV 4",
       age: 26,
       job: "Full Stack Developer",
-      user: 4,
+      owner: 4,
       skills: [1, 2, 3, 4, 5],
     },
     {
@@ -78,7 +78,7 @@ export const db = {
       name: "Fake CV 5",
       age: 29,
       job: "Software Engineer",
-      user: 5,
+      owner: 5,
       skills: [3, 4, 5, 6],
     },
     {
@@ -86,7 +86,7 @@ export const db = {
       name: "Fake CV 6",
       age: 27,
       job: "Data Scientist",
-      user: 1,
+      owner: 1,
       skills: [6, 7],
     },
     {
@@ -94,7 +94,7 @@ export const db = {
       name: "Fake CV 7",
       age: 31,
       job: "UI/UX Designer",
-      user: 2,
+      owner: 2,
       skills: [1, 2],
     },
     {
@@ -102,7 +102,7 @@ export const db = {
       name: "Fake CV 8",
       age: 24,
       job: "Network Engineer",
-      user: 3,
+      owner: 3,
       skills: [3, 4, 5],
     },
     {
@@ -110,7 +110,7 @@ export const db = {
       name: "Fake CV 9",
       age: 32,
       job: "Project Manager",
-      user: 4,
+      owner: 4,
       skills: [1, 2, 5, 6],
     },
     {
@@ -118,7 +118,7 @@ export const db = {
       name: "Fake CV 10",
       age: 26,
       job: "System Administrator",
-      user: 5,
+      owner: 5,
       skills: [3, 4, 7],
     },
   ],
