@@ -30,6 +30,25 @@ type Query {
   getCvByID(id: ID!): CV!
 }
 
-type CvUser {
-  owner: User!
+type Mutation {
+  addCv(addCvInput: CvAddInput): CV!
+  updateCv(updateCvInput: CvUpdateInput): CV!
+  deleteCv(id: ID!): CV!
+}
+
+input CvAddInput {
+  name: String!
+  age: Int!
+  job: String!
+  owner: Int!
+  skills: [Int!]!
+}
+
+input CvUpdateInput {
+  id: Int!
+  name: String
+  age: Int
+  job: String
+  owner: Int
+  skills: [Int!]
 }
