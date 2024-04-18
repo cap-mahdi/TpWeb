@@ -8,7 +8,7 @@ type CV {
   name: String!
   age: Int!
   job: String!
-  user: User!
+  owner: User!
   skills: [Skill!]!
 }
 
@@ -26,6 +26,10 @@ type User {
 }
 
 type Query {
-  cvs: [CV!]!
-  cv(id: ID!): CV!
+  getAllCv: [CV!]!
+  getCvByID(id: ID!): CV!
+}
+
+type CvUser {
+  owner: User!
 }
