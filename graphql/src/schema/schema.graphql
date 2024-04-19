@@ -27,5 +27,30 @@ type User {
 
 type Query {
   cvs: [CV!]!
-  cv(id: ID!): CV!
+  cv(id: ID!): CV
+  users: [User!]!
+  skills: [Skill!]!
+}
+
+type Mutation {
+  createUser(email: String!, name: String!): User!
+  createSkill(designation: String!): Skill!
+  createCv(createCvDto: CreateCvDto!): CV!
+  updateCv(id: ID!, updateCvDto: UpdateCvDto!): CV!
+  deleteCv(id: ID!): CV!
+}
+
+input CreateCvDto {
+  name: String!
+  age: Int!
+  job: String!
+  userId: ID!
+  skills: [ID!]!
+}
+
+input UpdateCvDto {
+  name: String
+  age: Int
+  job: String
+  skills: [ID!]!
 }
