@@ -1,3 +1,4 @@
+import { GraphQLError } from "graphql"
 import { GraphQLContext } from "../context"
 import { CreateCvDto, UpdateCvDto } from "../dto"
 
@@ -40,7 +41,7 @@ export const Mutation = {
             }
         })
         if (!user)
-            throw new Error("user not found")
+            throw new GraphQLError("user not found")
 
         createCvDto.skills.forEach(async (skillId) => {
             const skill = await prisma.skill.findUnique({
@@ -49,7 +50,7 @@ export const Mutation = {
                 }
             })
             if (!skill)
-                throw new Error("skill not found")
+                throw new GraphQLError("skill not found")
         })
 
         const cvData = {
@@ -82,7 +83,7 @@ export const Mutation = {
         });
 
         if (!foundCv) {
-            throw new Error('CV not found');
+            throw new GraphQLError('CV not found');
         }
 
         const updatedCv = await prisma.cv.update({
@@ -106,7 +107,7 @@ export const Mutation = {
         });
 
         if (!foundCv) {
-            throw new Error('CV not found');
+            throw new GraphQLError('CV not found');
         }
 
         const cv = await prisma.cv.delete({

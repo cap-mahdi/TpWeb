@@ -1,3 +1,4 @@
+import { GraphQLError } from "graphql";
 import { GraphQLContext } from "../context";
 
 export const Query = {
@@ -10,6 +11,8 @@ export const Query = {
         id: parseInt(id)
       }
     })
+    if (!cv)
+      throw new GraphQLError("cv not found")
     return cv
   },
   users: async (parent: unknown, args: {}, { prisma }: GraphQLContext) => {
