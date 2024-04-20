@@ -76,24 +76,25 @@ export const Mutation = {
         skills: true,
       },
     });
-    pubSub.publish(PubSubEvents.NOTIFY, {
-      notifyCv: {
-        cv: { ...newCv, user: newCv.user.id },
-        mutation: MutationType.ADD,
-      },
-    });
-    return {
+
+    const returnedCv = {
       ...newCv,
       skills: newCv.skills.map((skill) => skill.id),
       user: newCv.user.id,
     };
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        cv: returnedCv,
+        mutation: MutationType.ADD,
+      },
+    });
+    return returnedCv;
   },
   updateCv: async (
     _: unknown,
     { id, updateCvInput }: { id: string; updateCvInput: UpdateCvDto },
     { prisma, pubSub }: GraphQLContext
   ): Promise<CvWithSkills> => {
-    console.log(updateCvInput);
     const foundCv = await prisma.cv.findUnique({
       where: {
         id: parseInt(id),
@@ -132,17 +133,19 @@ export const Mutation = {
         skills: true,
       },
     });
-    pubSub.publish(PubSubEvents.NOTIFY, {
-      notifyCv: {
-        cv: { ...updatedCv, user: updatedCv.user.id },
-        mutation: MutationType.UPDATE,
-      },
-    });
-    return {
+    const returnedCv = {
       ...updatedCv,
       skills: updatedCv.skills.map((skill) => skill.id),
       user: updatedCv.user.id,
     };
+
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        cv: returnedCv,
+        mutation: MutationType.UPDATE,
+      },
+    });
+    return returnedCv;
   },
   deleteCv: async (
     _: unknown,
@@ -169,17 +172,17 @@ export const Mutation = {
         skills: true,
       },
     });
-    console.log("cvHSOSOSOSOSO", cv);
-    pubSub.publish(PubSubEvents.NOTIFY, {
-      notifyCv: {
-        cv: { ...cv, user: cv.user.id },
-        mutation: MutationType.DELETE,
-      },
-    });
-    return {
+    const returnedCv = {
       ...cv,
       skills: cv.skills.map((skill) => skill.id),
       user: cv.user.id,
     };
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        cv: returnedCv,
+        mutation: MutationType.DELETE,
+      },
+    });
+    return returnedCv;
   },
 };
