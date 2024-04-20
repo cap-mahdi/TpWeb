@@ -21,7 +21,11 @@ type DeleteCvArgs = {
 };
 
 export const Mutation = {
-  addCv: (_: unknown, { addCvInput }: AddCvArgs, { db, pubSub }: Context) => {
+  addCv: (
+    _: unknown,
+    { addCvInput }: AddCvArgs,
+    { db, pubSub }: Context
+  ): CvWithSkills => {
     if (!userExists(db, addCvInput.owner)) {
       throw new GraphQLError(`There is no user with id ${addCvInput.owner}`);
     }
@@ -54,7 +58,7 @@ export const Mutation = {
     _: unknown,
     { updateCvInput, id }: UpdateCvArgs,
     { db, pubSub }: Context
-  ) => {
+  ): CvWithSkills => {
     if (!cvExists(db, id)) {
       throw new GraphQLError(`There is no cv with id ${id}`);
     }
@@ -91,8 +95,13 @@ export const Mutation = {
         cv: db.cvs[cvIndex],
       },
     });
-
-    return db.cvs[cvIndex];
+    const updateCv = db.cvs[cvIndex];
+    return {
+      ...updateCv,
+      skills: db.cvSkills
+        .filter((cvSkill) => cvSkill.cvId === id)
+        .map((cvSkill) => cvSkill.skillId),
+    };
   },
 
   deleteCv: (
