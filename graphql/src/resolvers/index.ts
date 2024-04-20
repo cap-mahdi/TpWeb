@@ -1,11 +1,11 @@
 import { Query } from "./query";
-import { CV } from "./cv";
+import { Cv } from "./cv";
 import { Mutation } from "./mutation";
+import { Subscription } from "./subscription";
 
-const resolvers = {
+export const resolvers = {
   Query,
-  CV,
   Mutation,
+  Subscription,
+  Cv,
 };
-
-export { resolvers };

@@ -1,10 +1,28 @@
-export const CV = {
-  owner: ({ owner }: any, args: any, context: any) => {
-    // console.log("i enter");
-    return context.db.users.find((user: any) => user.id === owner);
+import { GraphQLError } from "graphql";
+import { Context, CvSkill, Cv as CvType, Skill, User } from "../types";
+
+export const Cv = {
+  owner: ({ owner }: CvType, _: {}, { db }: Context): User => {
+    const foundOwner = db.users.find((user: User) => user.id === owner);
+    if (!foundOwner) {
+      throw new GraphQLError(`User with id ${owner} not found`);
+    }
+    return foundOwner;
   },
-  skills: ({ skills }: any, args: any, context: any) => {
-    // console.log("i enter");
-    return context.db.skills.filter((skill: any) => skills.includes(skill.id));
+
+  skills: ({ id }: CvType, _: {}, { db }: Context): Skill[] => {
+    const relatedCvSkills = db.cvSkills.filter(
+      (cvSkill: CvSkill) => cvSkill.cvId === id
+    );
+
+    return relatedCvSkills.map((cvSkill: CvSkill) => {
+      const foundSkill = db.skills.find(
+        (skill: Skill) => skill.id === cvSkill.skillId
+      );
+      if (!foundSkill) {
+        throw new GraphQLError(`Skill with id ${cvSkill.skillId} not found`);
+      }
+      return foundSkill;
+    });
   },
 };
