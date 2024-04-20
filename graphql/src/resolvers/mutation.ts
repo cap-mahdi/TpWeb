@@ -89,19 +89,22 @@ export const Mutation = {
         }))
       );
     }
-    pubSub.publish(PubSubEvents.NOTIFY, {
-      notifyCv: {
-        mutation: MutationType.UPDATE,
-        cv: db.cvs[cvIndex],
-      },
-    });
+
     const updateCv = db.cvs[cvIndex];
-    return {
+    const returnedCv = {
       ...updateCv,
       skills: db.cvSkills
         .filter((cvSkill) => cvSkill.cvId === id)
         .map((cvSkill) => cvSkill.skillId),
     };
+
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        mutation: MutationType.UPDATE,
+        cv: returnedCv,
+      },
+    });
+    return returnedCv;
   },
 
   deleteCv: (
@@ -115,16 +118,17 @@ export const Mutation = {
     const relatedSkills = db.cvSkills.filter((cvSkill) => cvSkill.cvId === id);
     db.cvSkills = db.cvSkills.filter((cvSkill) => cvSkill.cvId !== id);
     const deletedCvIndex = db.cvs.findIndex((cv: Cv) => cv.id === id);
-    pubSub.publish(PubSubEvents.NOTIFY, {
-      notifyCv: {
-        mutation: MutationType.DELETE,
-        cv: db.cvs[deletedCvIndex],
-      },
-    });
     const deletedCv = db.cvs.splice(deletedCvIndex, 1)[0];
-    return {
+    const returnedCv = {
       ...deletedCv,
       skills: relatedSkills.map((cvSkill) => cvSkill.skillId),
     };
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        mutation: MutationType.DELETE,
+        cv: returnedCv,
+      },
+    });
+    return returnedCv;
   },
 };

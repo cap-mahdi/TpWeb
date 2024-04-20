@@ -1,4 +1,4 @@
-import { Cv } from "./Cv";
+import { Cv, CvWithSkills } from "./Cv";
 
 export enum MutationType {
   ADD = "ADD",
@@ -7,6 +7,6 @@ export enum MutationType {
 }
 
 export type CvSubscriptionReturn = {
-  cv: Cv;
+  cv: CvWithSkills;
   mutation: MutationType;
 };
