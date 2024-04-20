@@ -23,7 +23,7 @@ async function bootstrap() {
     for (let cv of cvs) {
     }
   } catch (e) {
-    Logger.error(`Error while seeding cvs: ${e.message}`);
+    Logger.error(`GraphQLError while seeding cvs: ${e.message}`);
   }
   app.close();
 }

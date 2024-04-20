@@ -6,7 +6,6 @@ import { UserService } from '../../user/user.service';
 import { User } from '../../entities';
 import * as bcrypt from 'bcryptjs';
 
-
 const users: Omit<User, 'id' | 'cv' | 'role'>[] = [
   {
     userName: 'houssem',
@@ -46,7 +45,7 @@ async function bootstrap() {
     });
     await Promise.all(promises);
   } catch (e) {
-    Logger.error(`Error while seeding user: ${e.message}`);
+    Logger.error(`GraphQLError while seeding user: ${e.message}`);
   }
   app.close();
 }

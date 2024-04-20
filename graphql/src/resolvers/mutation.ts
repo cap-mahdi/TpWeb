@@ -1,17 +1,17 @@
 import { GraphQLError } from "graphql";
-import { GraphQLContext } from "../context";
-import { CreateCvDto, UpdateCvDto } from "../dto";
+import {
+  CreateCvDto,
+  CreateSkillDto,
+  CreateUserDto,
+  UpdateCvDto,
+} from "../dto";
+import { Cv, Context as GraphQLContext, MutationType } from "../types";
+import { PubSubEvents } from "../pubsub";
 
 export const Mutation = {
   createUser: async (
-    parent: unknown,
-    {
-      email,
-      name,
-    }: {
-      email: string;
-      name: string;
-    },
+    _: unknown,
+    { email, name }: CreateUserDto,
     { prisma }: GraphQLContext
   ) => {
     const newUser = await prisma.user.create({
@@ -23,8 +23,8 @@ export const Mutation = {
     return newUser;
   },
   createSkill: async (
-    parent: unknown,
-    { designation }: { designation: string },
+    _: unknown,
+    { designation }: CreateSkillDto,
     { prisma }: GraphQLContext
   ) => {
     const newSkill = await prisma.skill.create({
@@ -34,32 +34,33 @@ export const Mutation = {
     });
     return newSkill;
   },
-  createCv: async (
-    parent: unknown,
-    { createCvDto }: { createCvDto: CreateCvDto },
-    { prisma }: GraphQLContext
+  addCv: async (
+    _: unknown,
+    { addCvInput }: { addCvInput: CreateCvDto },
+    { prisma, pubSub }: GraphQLContext
   ) => {
     const user = await prisma.user.findUnique({
       where: {
-        id: parseInt(createCvDto.userId),
+        id: parseInt(addCvInput.userId),
       },
     });
     if (!user) throw new GraphQLError("user not found");
 
-    createCvDto.skills.forEach(async (skillId) => {
+    for (const skillId of addCvInput.skills) {
       const skill = await prisma.skill.findUnique({
         where: {
           id: parseInt(skillId),
         },
       });
-      if (!skill) throw new GraphQLError("skill not found");
-    });
-
+      if (!skill) {
+        throw new GraphQLError("skill not found");
+      }
+    }
     const cvData = {
-      ...createCvDto,
-      userId: parseInt(createCvDto.userId),
+      ...addCvInput,
+      userId: parseInt(addCvInput.userId),
       skills: {
-        connect: createCvDto.skills.map((skill) => ({ id: parseInt(skill) })),
+        connect: addCvInput.skills.map((skill) => ({ id: parseInt(skill) })),
       },
     };
     const newCv = await prisma.cv.create({
@@ -70,14 +71,20 @@ export const Mutation = {
         skills: true,
       },
     });
-
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        cv: { ...newCv, user: newCv.user.id },
+        mutation: MutationType.ADD,
+      },
+    });
     return newCv;
   },
   updateCv: async (
-    parent: unknown,
-    { id, updateCvDto }: { id: string; updateCvDto: UpdateCvDto },
-    { prisma }: GraphQLContext
+    _: unknown,
+    { id, updateCvInput }: { id: string; updateCvInput: UpdateCvDto },
+    { prisma, pubSub }: GraphQLContext
   ) => {
+    console.log(updateCvInput);
     const foundCv = await prisma.cv.findUnique({
       where: {
         id: parseInt(id),
@@ -88,24 +95,47 @@ export const Mutation = {
       throw new GraphQLError("CV not found");
     }
 
+    for (const skillId of updateCvInput.skills || []) {
+      const skill = await prisma.skill.findUnique({
+        where: {
+          id: parseInt(skillId),
+        },
+      });
+      if (!skill) {
+        throw new GraphQLError("skill not found");
+      }
+    }
+
     const updatedCv = await prisma.cv.update({
       where: {
         id: parseInt(id),
       },
       data: {
-        ...updateCvDto,
+        ...updateCvInput,
         skills: {
-          set: updateCvDto.skills.map((skill) => ({ id: parseInt(skill) })),
+          set: updateCvInput.skills?.map((skill) => ({ id: parseInt(skill) })),
         },
+        userId: updateCvInput.userId || foundCv.userId,
+      },
+      relationLoadStrategy: "join",
+      include: {
+        user: true,
+        skills: true,
+      },
+    });
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        cv: { ...updatedCv, user: updatedCv.user.id },
+        mutation: MutationType.UPDATE,
       },
     });
     return updatedCv;
   },
   deleteCv: async (
-    parent: unknown,
+    _: unknown,
     { id }: { id: string },
-    { prisma }: GraphQLContext
-  ) => {
+    { prisma, pubSub }: GraphQLContext
+  ): Cv => {
     const foundCv = await prisma.cv.findUnique({
       where: {
         id: parseInt(id),
@@ -120,7 +150,22 @@ export const Mutation = {
       where: {
         id: parseInt(id),
       },
+      relationLoadStrategy: "join",
+      include: {
+        user: true,
+        skills: true,
+      },
     });
-    return cv;
+    console.log("cv", cv);
+    pubSub.publish(PubSubEvents.NOTIFY, {
+      notifyCv: {
+        cv: { ...cv, user: cv.user.id },
+        mutation: MutationType.DELETE,
+      },
+    });
+    return {
+      ...cv,
+      skills: cv.skills.map((skill) => skill.id),
+    };
   },
 };

@@ -1,7 +1,7 @@
 export type Cv = {
-  id: string;
+  id: number;
   name: string;
   age: number;
   job: string;
-  owner: string;
+  user: number;
 };

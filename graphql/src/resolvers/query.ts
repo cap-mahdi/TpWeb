@@ -1,18 +1,17 @@
 import { GraphQLError } from "graphql";
-import { Context, Cv } from "../types";
-import { cvExists } from "../utils";
+import { Context as GraphQLContext } from "../types";
 
 type GetCvByIdArgs = {
   id: string;
 };
 
 export const Query = {
-  cvs: (parent: unknown, args: {}, { prisma }: GraphQLContext) => {
+  getAllCv: (_: unknown, _1: {}, { prisma }: GraphQLContext) => {
     return prisma.cv.findMany();
   },
-  cv: async (
-    parent: unknown,
-    { id }: { id: string },
+  getCvByID: async (
+    _: unknown,
+    { id }: GetCvByIdArgs,
     { prisma }: GraphQLContext
   ) => {
     const cv = await prisma.cv.findFirst({
@@ -23,11 +22,11 @@ export const Query = {
     if (!cv) throw new GraphQLError("cv not found");
     return cv;
   },
-  users: async (parent: unknown, args: {}, { prisma }: GraphQLContext) => {
+  getAllUser: async (_: unknown, _1: {}, { prisma }: GraphQLContext) => {
     const users = await prisma.user.findMany();
     return users;
   },
-  skills: async (parent: unknown, args: {}, { prisma }: GraphQLContext) => {
+  getSkills: async (_: unknown, _1: {}, { prisma }: GraphQLContext) => {
     const skills = await prisma.skill.findMany({
       relationLoadStrategy: "join",
       include: {

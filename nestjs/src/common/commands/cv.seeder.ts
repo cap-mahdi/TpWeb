@@ -49,7 +49,7 @@ async function bootstrap() {
 
     await Promise.all(promises);
   } catch (e) {
-    Logger.error(`Error while seeding cvs: ${e.message}`);
+    Logger.error(`GraphQLError while seeding cvs: ${e.message}`);
   }
   app.close();
 }

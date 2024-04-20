@@ -1,11 +1,13 @@
-import { CV } from "./cv";
+import { Cv } from "./cv";
 import { Mutation } from "./mutation";
 import { Query } from "./query";
+import { Subscription } from "./subscription";
 import { User } from "./user";
 
 export const resolvers = {
   Query,
   Mutation,
-  CV,
+  Cv,
   User,
+  Subscription,
 };

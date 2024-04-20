@@ -1,8 +1,7 @@
-import { Cv } from "@prisma/client";
-import { GraphQLContext } from "../context";
-
-export const CV = {
-  user: async (cv: Cv, _: unknown, { prisma }: GraphQLContext) => {
+import { Cv as CvModel } from "@prisma/client";
+import { Context as GraphQLContext } from "../types";
+export const Cv = {
+  owner: async (cv: CvModel, _: unknown, { prisma }: GraphQLContext) => {
     const user = await prisma.user.findUnique({
       where: {
         id: cv.userId,
@@ -10,7 +9,7 @@ export const CV = {
     });
     return user;
   },
-  skills: async (parent: Cv, _: unknown, { prisma }: GraphQLContext) => {
+  skills: async (parent: CvModel, _: unknown, { prisma }: GraphQLContext) => {
     const cv = await prisma.cv.findFirst({
       where: {
         id: parent.id,
