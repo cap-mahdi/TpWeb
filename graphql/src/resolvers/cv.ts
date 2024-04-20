@@ -1,5 +1,12 @@
 import { GraphQLError } from "graphql";
-import { Context, CvSkill, Cv as CvType, Skill, User } from "../types";
+import {
+  Context,
+  CvSkill,
+  Cv as CvType,
+  CvWithSkills,
+  Skill,
+  User,
+} from "../types";
 
 export const Cv = {
   owner: ({ owner }: CvType, _: {}, { db }: Context): User => {
@@ -10,17 +17,11 @@ export const Cv = {
     return foundOwner;
   },
 
-  skills: ({ id }: CvType, _: {}, { db }: Context): Skill[] => {
-    const relatedCvSkills = db.cvSkills.filter(
-      (cvSkill: CvSkill) => cvSkill.cvId === id
-    );
-
-    return relatedCvSkills.map((cvSkill: CvSkill) => {
-      const foundSkill = db.skills.find(
-        (skill: Skill) => skill.id === cvSkill.skillId
-      );
+  skills: ({ id, skills }: CvWithSkills, _: {}, { db }: Context): Skill[] => {
+    return skills.map((skillId: string) => {
+      const foundSkill = db.skills.find((skill: Skill) => skill.id === skillId);
       if (!foundSkill) {
-        throw new GraphQLError(`Skill with id ${cvSkill.skillId} not found`);
+        throw new GraphQLError(`Skill with id ${skillId} not found`);
       }
       return foundSkill;
     });

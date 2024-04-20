@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import { Context, Cv, MutationType } from "../types";
+import { Context, Cv, CvWithSkills, MutationType } from "../types";
 import { cvExists, skillExists, userExists } from "../utils";
 import { PubSubEvents } from "../pubsub";
 
@@ -95,11 +95,16 @@ export const Mutation = {
     return db.cvs[cvIndex];
   },
 
-  deleteCv: (_: unknown, { id }: DeleteCvArgs, { db, pubSub }: Context) => {
+  deleteCv: (
+    _: unknown,
+    { id }: DeleteCvArgs,
+    { db, pubSub }: Context
+  ): CvWithSkills => {
     if (!cvExists(db, id)) {
       throw new GraphQLError(`There is no cv with id ${id}`);
     }
-
+    const relatedSkills = db.cvSkills.filter((cvSkill) => cvSkill.cvId === id);
+    db.cvSkills = db.cvSkills.filter((cvSkill) => cvSkill.cvId !== id);
     const deletedCvIndex = db.cvs.findIndex((cv: Cv) => cv.id === id);
     pubSub.publish(PubSubEvents.NOTIFY, {
       notifyCv: {
@@ -107,6 +112,10 @@ export const Mutation = {
         cv: db.cvs[deletedCvIndex],
       },
     });
-    return db.cvs.splice(deletedCvIndex, 1)[0];
+    const deletedCv = db.cvs.splice(deletedCvIndex, 1)[0];
+    return {
+      ...deletedCv,
+      skills: relatedSkills.map((cvSkill) => cvSkill.skillId),
+    };
   },
 };

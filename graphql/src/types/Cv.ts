@@ -5,3 +5,7 @@ export type Cv = {
   job: string;
   owner: string;
 };
+
+export type CvWithSkills = Cv & {
+  skills: string[];
+};
