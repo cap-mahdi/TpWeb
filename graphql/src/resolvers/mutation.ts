@@ -5,7 +5,12 @@ import {
   CreateUserDto,
   UpdateCvDto,
 } from "../dto";
-import { Cv, Context as GraphQLContext, MutationType } from "../types";
+import {
+  Cv,
+  CvWithSkills,
+  Context as GraphQLContext,
+  MutationType,
+} from "../types";
 import { PubSubEvents } from "../pubsub";
 
 export const Mutation = {
@@ -38,7 +43,7 @@ export const Mutation = {
     _: unknown,
     { addCvInput }: { addCvInput: CreateCvDto },
     { prisma, pubSub }: GraphQLContext
-  ) => {
+  ): Promise<CvWithSkills> => {
     const user = await prisma.user.findUnique({
       where: {
         id: parseInt(addCvInput.userId),
@@ -77,13 +82,17 @@ export const Mutation = {
         mutation: MutationType.ADD,
       },
     });
-    return newCv;
+    return {
+      ...newCv,
+      skills: newCv.skills.map((skill) => skill.id),
+      user: newCv.user.id,
+    };
   },
   updateCv: async (
     _: unknown,
     { id, updateCvInput }: { id: string; updateCvInput: UpdateCvDto },
     { prisma, pubSub }: GraphQLContext
-  ) => {
+  ): Promise<CvWithSkills> => {
     console.log(updateCvInput);
     const foundCv = await prisma.cv.findUnique({
       where: {
@@ -129,13 +138,17 @@ export const Mutation = {
         mutation: MutationType.UPDATE,
       },
     });
-    return updatedCv;
+    return {
+      ...updatedCv,
+      skills: updatedCv.skills.map((skill) => skill.id),
+      user: updatedCv.user.id,
+    };
   },
   deleteCv: async (
     _: unknown,
     { id }: { id: string },
     { prisma, pubSub }: GraphQLContext
-  ): Cv => {
+  ) => {
     const foundCv = await prisma.cv.findUnique({
       where: {
         id: parseInt(id),
@@ -156,7 +169,7 @@ export const Mutation = {
         skills: true,
       },
     });
-    console.log("cv", cv);
+    console.log("cvHSOSOSOSOSO", cv);
     pubSub.publish(PubSubEvents.NOTIFY, {
       notifyCv: {
         cv: { ...cv, user: cv.user.id },
@@ -166,6 +179,7 @@ export const Mutation = {
     return {
       ...cv,
       skills: cv.skills.map((skill) => skill.id),
+      user: cv.user.id,
     };
   },
 };

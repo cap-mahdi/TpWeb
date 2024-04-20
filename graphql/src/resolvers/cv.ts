@@ -1,5 +1,5 @@
 import { Cv as CvModel } from "@prisma/client";
-import { Context as GraphQLContext } from "../types";
+import { CvWithSkills, Context as GraphQLContext } from "../types";
 export const Cv = {
   owner: async (cv: CvModel, _: unknown, { prisma }: GraphQLContext) => {
     const user = await prisma.user.findUnique({
@@ -9,16 +9,13 @@ export const Cv = {
     });
     return user;
   },
-  skills: async (parent: CvModel, _: unknown, { prisma }: GraphQLContext) => {
-    const cv = await prisma.cv.findFirst({
+  skills: async (cv: CvWithSkills, _: unknown, { prisma }: GraphQLContext) => {
+    return await prisma.skill.findMany({
       where: {
-        id: parent.id,
-      },
-      relationLoadStrategy: "join",
-      include: {
-        skills: true,
+        id: {
+          in: cv.skills,
+        },
       },
     });
-    return cv?.skills;
   },
 };
