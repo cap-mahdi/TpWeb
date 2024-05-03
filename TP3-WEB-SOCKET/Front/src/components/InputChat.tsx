@@ -13,6 +13,13 @@ export const InputChat = ({ onSendMessage }: InputChatProps) => {
     setMessage("");
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      // Submit the form when Enter key is pressed
+      handleSendMessage();
+    }
+  };
+
   return (
     <div className="border-t-2 border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
       <div className="relative flex">
@@ -20,6 +27,7 @@ export const InputChat = ({ onSendMessage }: InputChatProps) => {
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Write your message!"
           className="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-12 bg-gray-200 rounded-md py-3"
         />

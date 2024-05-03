@@ -20,11 +20,13 @@ interface HeartPayload {
   userId: string;
 }
 
+const savedUser = localStorage.getItem("user") as string;
+const user = JSON.parse(savedUser);
+
 export const ChatConversation = () => {
   const socket = useContext(WebsocketContext);
 
   const [messages, setMessages] = useState<IMessage[]>([]);
-  const [socketId, setSocketId] = useState<string | null>(null);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -64,7 +66,6 @@ export const ChatConversation = () => {
 
     socket.on("connection-id", (id) => {
       console.log("Connection ID received", id);
-      setSocketId(id);
     });
 
     return () => {
@@ -79,7 +80,7 @@ export const ChatConversation = () => {
     const messagePayload: MessagePayload = {
       id: Date.now().toString(),
       text: message,
-      userId: socketId,
+      userId: user.id,
     };
     console.log("Sending message", messagePayload);
 
@@ -89,7 +90,7 @@ export const ChatConversation = () => {
   const onToggleHeart = (messageId: string) => {
     const heartPayload: HeartPayload = {
       messageId,
-      userId: socketId!,
+      userId: user.id!,
     };
     console.log("Sending heart", heartPayload);
 
@@ -102,7 +103,7 @@ export const ChatConversation = () => {
       <div className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
         {messages.map((message) => (
           <div key={message.id}>
-            {message.userId !== socketId ? (
+            {message.userId !== user.id ? (
               <ChatMessageSend
                 messageId={message.id}
                 text={message.text}
