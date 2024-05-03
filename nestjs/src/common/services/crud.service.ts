@@ -23,11 +23,11 @@ export class CrudService<Entity extends HasId> {
   }
 
   async remove(id: any): Promise<Entity> {
-    const cvToRemove = await this.findOne(id);
-    if (!cvToRemove) {
+    const entityToRemove = await this.findOne(id);
+    if (!entityToRemove) {
       throw new NotFoundException('entity Not Found');
     }
-    return this.repository.remove(cvToRemove);
+    return this.repository.remove(entityToRemove);
   }
 
   findAll(): Promise<Entity[]> {

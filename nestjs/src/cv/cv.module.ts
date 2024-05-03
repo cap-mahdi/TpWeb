@@ -6,9 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Cv, Skill])],
-
   controllers: [CvController],
   providers: [CvService],
-  exports: [CvService]
+  exports: [CvService],
 })
-export class CvModule { }
+export class CvModule {}

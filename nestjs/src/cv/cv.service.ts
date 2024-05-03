@@ -8,11 +8,12 @@ import {
 import { CrudService } from '../common/services/crud.service';
 import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cv, Skill, User } from '../entities';
+import { Cv, Skill, User, UserRole } from '../entities';
 import * as fs from 'fs-extra';
 import { join } from 'path';
 import { CreateNewCvDto } from './dto/create-new-cv.dto';
-import { UserRole } from '../user/dto/userRole.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CVEvent } from '../common/events';
 
 @Injectable()
 export class CvService extends CrudService<Cv> {
@@ -21,6 +22,7 @@ export class CvService extends CrudService<Cv> {
     private cvRepository: Repository<Cv>,
     @InjectRepository(Skill)
     private skillRepository: Repository<Skill>,
+    private eventEmitter: EventEmitter2,
   ) {
     super(cvRepository);
   }
@@ -40,7 +42,7 @@ export class CvService extends CrudService<Cv> {
     ];
     if (user && user.role === UserRole.Admin) {
       return this.cvRepository.find({
-        where: filter,
+        where: { ...filter, isDeleted: false },
         take: limit,
         skip: (page - 1) * limit,
       });
@@ -53,14 +55,13 @@ export class CvService extends CrudService<Cv> {
     }
   }
 
-  async findOne(id: number, user: User = null): Promise<Cv> {
+  async findOne(id: number): Promise<Cv> {
     const cv = await this.cvRepository.findOne({
-      where: { id },
-      relations: ['user'],
+      where: { id, isDeleted: false },
+      relations: ['user', 'skills'],
     });
     if (!cv) throw new NotFoundException('cv not found');
-    if (user.role === UserRole.Admin || cv.user.id == user.id) return cv;
-    throw new ForbiddenException();
+    return cv;
   }
 
   async createCv(createNewCvDto: CreateNewCvDto, user: User) {
@@ -69,11 +70,15 @@ export class CvService extends CrudService<Cv> {
       user,
     });
     const savedCv = await this.cvRepository.save(newCv);
+
+    this.eventEmitter.emit(CVEvent.Add, { cv: savedCv, user });
     return savedCv;
   }
 
-  async addSKill(cvId: number, skillId: number): Promise<Cv> {
-    const cv = await this.cvRepository.findOne({ where: { id: cvId } });
+  async addSKill(cvId: number, skillId: number, user: User): Promise<Cv> {
+    const cv = await this.cvRepository.findOne({
+      where: { id: cvId, isDeleted: false },
+    });
     if (!cv) {
       throw new NotFoundException('cv not found');
     }
@@ -83,16 +88,31 @@ export class CvService extends CrudService<Cv> {
     if (!skill) {
       throw new NotFoundException('skill not found');
     }
-    return this.cvRepository
+
+    const cvUpdated = await this.cvRepository
       .createQueryBuilder()
       .relation(Cv, 'skills')
       .of(cvId)
       .add(skillId)
       .then(() => this.findOne(cvId));
+    this.eventEmitter.emit(CVEvent.Update, { cv: cvUpdated, user: user });
+    return cvUpdated;
   }
 
-  async uploadPhoto(id: number, file) {
-    const foundCv = await this.cvRepository.findOne({ where: { id } });
+  async update(id: number, updateDto: Partial<Cv>, user: User = null) {
+    const cv = await this.cvRepository.findOne({
+      where: { id, isDeleted: false },
+    });
+    if (!cv) throw new NotFoundException();
+    const updatedCv = await this.cvRepository.save({ ...cv, ...updateDto });
+    this.eventEmitter.emit(CVEvent.Update, { cv: updatedCv, user });
+    return updatedCv;
+  }
+
+  async uploadPhoto(id: number, file: Express.Multer.File, user: User) {
+    const foundCv = await this.cvRepository.findOne({
+      where: { id, isDeleted: false },
+    });
     if (!foundCv) throw new NotFoundException();
 
     const fileName = Date.now() + file.originalname;
@@ -103,11 +123,25 @@ export class CvService extends CrudService<Cv> {
       foundCv.path = `/public/uploads/${fileName}`;
       // foundCv.path = foundCv.path.replace(/\s/g, '_');
 
-      await this.cvRepository.save(foundCv);
+      const newCv = await this.cvRepository.save(foundCv);
+      this.eventEmitter.emit(CVEvent.Update, {
+        cv: newCv,
+        user,
+      });
       return foundCv;
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException();
     }
+  }
+
+  async remove(id: number, user: User = null) {
+    const cv = await this.cvRepository.findOne({
+      where: { id, isDeleted: false },
+    });
+    if (!cv) throw new NotFoundException('cv not found');
+    const cvDeleted = await this.cvRepository.save({ ...cv, isDeleted: true });
+    this.eventEmitter.emit(CVEvent.Delete, { cv: cvDeleted, user });
+    return cvDeleted;
   }
 }

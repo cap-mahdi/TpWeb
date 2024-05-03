@@ -4,19 +4,22 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cv } from 'src/entities';
+import { Cv } from '../../entities';
+import { AdminGuard } from './admin.guard';
 @Injectable()
-export class CvOwnerGuard implements CanActivate {
+export class CvOwnerGuard extends AdminGuard {
   constructor(
     @InjectRepository(Cv)
     private cvRepository: Repository<Cv>,
-  ) {}
+  ) {
+    super();
+  }
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const cvId = request.params.id;
+    const cvId = request.params.cvId;
+    if (!cvId) return super.canActivate(context) as boolean;
     const { user } = request;
     const cv = await this.cvRepository.findOne({
       where: { id: cvId },
@@ -24,7 +27,7 @@ export class CvOwnerGuard implements CanActivate {
     });
     if (!cv) throw new NotFoundException();
     const isOwner = cv.user.id == user.id;
-
-    return isOwner;
+    if (isOwner) return true;
+    return super.canActivate(context) as boolean;
   }
 }

@@ -22,6 +22,5 @@ export class UpdateCvDto {
 
   @IsString()
   @IsOptional()
-  s;
   path: string;
 }

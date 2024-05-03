@@ -6,6 +6,7 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  DeleteDateColumn,
 } from 'typeorm';
 import { User, Skill } from './';
 
@@ -32,10 +33,13 @@ export class Cv {
   @Column({ nullable: true })
   path: string;
 
-  @ManyToOne(() => User, (user) => user.cv)
+  @ManyToOne(() => User, (user) => user.cv, { eager: true })
   user: User;
 
-  @ManyToMany(() => Skill, (skill) => skill.cvs)
+  @ManyToMany(() => Skill, (skill) => skill.cvs, { eager: true })
   @JoinTable()
   skills: Skill[];
+
+  @Column({ default: false })
+  isDeleted: boolean;
 }

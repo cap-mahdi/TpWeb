@@ -16,9 +16,10 @@ import {
   HttpStatus,
   Query,
   Put,
+  Sse,
 } from '@nestjs/common';
 import { CvService } from './cv.service';
-import { Cv } from '../entities';
+import { Cv, UserRole } from '../entities';
 import { CreateNewCvDto } from './dto/create-new-cv.dto';
 import { UpdateCvDto } from './dto/Update-cv.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -26,12 +27,49 @@ import { GetUser } from '../auth/decorators/user.decorator';
 import { User } from '../entities';
 import { PaginationCvDto } from './dto/pagination-cv.dto';
 import { CvCriteriaDto } from './dto/get-cv-criteria.dto';
-import { CvOwnerGuard } from 'src/auth/guards/cv-owner.guard';
+import { CvOwnerGuard } from '../auth/guards/cv-owner.guard';
+import { Observable, filter, fromEvent, map, merge } from 'rxjs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CVEvent } from 'src/common/events';
 
 @Controller('cv')
 @UseGuards(AuthGuard('jwt'))
 export class CvController {
-  constructor(private readonly cvService: CvService) {}
+  constructor(
+    private readonly cvService: CvService,
+    private eventEmitter: EventEmitter2,
+  ) {}
+  @Sse('sse')
+  sse(@GetUser() user: User): Observable<MessageEvent> {
+    const createEvent = fromEvent(this.eventEmitter, CVEvent.Add).pipe(
+      filter(({ cv }) => {
+        return user.role === UserRole.Admin || cv.user.id === user.id;
+      }),
+      map(({ cv }) => {
+        return new MessageEvent('new-cv', { data: cv });
+      }),
+    );
+
+    const updateEvent = fromEvent(this.eventEmitter, CVEvent.Update).pipe(
+      filter(({ cv }: any) => {
+        return user.role === UserRole.Admin || cv.user.id === user.id;
+      }),
+      map(({ cv }) => {
+        return new MessageEvent('update-cv', { data: cv });
+      }),
+    );
+
+    const deleteEvent = fromEvent(this.eventEmitter, CVEvent.Delete).pipe(
+      filter(({ cv }) => {
+        return user.role === UserRole.Admin || cv.user.id === user.id;
+      }),
+      map(({ cv }) => {
+        return new MessageEvent('delete-cv', { data: cv });
+      }),
+    );
+    return merge(createEvent, updateEvent, deleteEvent);
+  }
+
   @Get()
   async getAllCv(
     @GetUser() user: User,
@@ -41,12 +79,10 @@ export class CvController {
     return this.cvService.findAll(user, page, limit, age, criteria);
   }
 
-  @Get(':id')
-  async getCvById(
-    @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: User,
-  ): Promise<Cv> {
-    return this.cvService.findOne(id, user);
+  @Get(':cvId')
+  @UseGuards(CvOwnerGuard)
+  async getCvById(@Param('cvId', ParseIntPipe) id: number): Promise<Cv> {
+    return this.cvService.findOne(id);
   }
 
   @Post()
@@ -58,22 +94,26 @@ export class CvController {
   }
 
   @UseGuards(CvOwnerGuard)
-  @Put(':id')
+  @Put(':cvId')
   async updateCv(
     @Body() updatecv: UpdateCvDto,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('cvId', ParseIntPipe) id: number,
+    @GetUser() user: User,
   ) {
-    return await this.cvService.update(id, updatecv);
+    return await this.cvService.update(id, updatecv, user);
   }
 
   @UseGuards(CvOwnerGuard)
-  @Delete(':id')
-  async deleteCv(@Param('id', ParseIntPipe) id: number) {
-    return await this.cvService.remove(id);
+  @Delete(':cvId')
+  async deleteCv(
+    @Param('cvId', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ) {
+    return await this.cvService.remove(id, user);
   }
 
   @UseGuards(CvOwnerGuard)
-  @Patch(':id/upload')
+  @Patch(':cvId/upload')
   @UseInterceptors(FileInterceptor('file'))
   public async uploadImage(
     @UploadedFile(
@@ -83,16 +123,19 @@ export class CvController {
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('cvId', ParseIntPipe) id: number,
+    @GetUser() user: User,
   ) {
-    return this.cvService.uploadPhoto(id, file);
+    return this.cvService.uploadPhoto(id, file, user);
   }
 
-  @Post('/:cvId/:skillId')
+  @UseGuards(CvOwnerGuard)
+  @Put('/:cvId/:skillId')
   async addSKill(
     @Param('cvId', ParseIntPipe) cvId: number,
     @Param('skillId', ParseIntPipe) skillId: number,
+    @GetUser() user: User,
   ): Promise<Cv> {
-    return await this.cvService.addSKill(cvId, skillId);
+    return await this.cvService.addSKill(cvId, skillId, user);
   }
 }

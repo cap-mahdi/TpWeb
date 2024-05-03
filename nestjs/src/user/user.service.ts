@@ -4,12 +4,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CrudService } from '../common/services/crud.service';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDTO } from './dto/create-user.dto';
-import { UserRole } from './dto/userRole.dto';
 @Injectable()
 export class UserService extends CrudService<User> {
   constructor(
