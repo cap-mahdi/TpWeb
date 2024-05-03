@@ -1,10 +1,12 @@
 import axios from "axios";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { WebsocketContext } from "../contexts";
 
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const socket = useContext(WebsocketContext);
 
   const navigate = useNavigate();
 
@@ -18,14 +20,15 @@ export const Login = () => {
       setLoading(true);
       setUsername("");
       const response = await axios.post(
-        "http://localhost:3000/users/register",
+        "http://localhost:3000/users/login",
         payload
       );
       const { data } = response;
-      console.log(data);
-
-      localStorage.setItem("user", JSON.stringify(data));
-      navigate("/chat");
+      if (data) {
+        socket.emit("login", { userId: data.id });
+        localStorage.setItem("user", JSON.stringify(data));
+        navigate("/chat");
+      }
     } catch (error) {
       console.error(error);
     } finally {

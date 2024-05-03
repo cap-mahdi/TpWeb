@@ -4,11 +4,12 @@ import { ChatMessageSend } from "./ChatMessageSend";
 import { InputChat } from "./InputChat";
 import { NavBar } from "./NavBar";
 import { WebsocketContext } from "../contexts";
+import { chatContext } from "../contexts/ChatContext";
 
 interface MessagePayload {
   id: string;
   text: string;
-  userId: string | null;
+  userId: string | undefined;
 }
 
 interface IMessage extends MessagePayload {
@@ -25,6 +26,7 @@ const user = JSON.parse(savedUser);
 
 export const ChatConversation = () => {
   const socket = useContext(WebsocketContext);
+  const { currentFriend } = useContext(chatContext);
 
   const [messages, setMessages] = useState<IMessage[]>([]);
 
@@ -80,10 +82,13 @@ export const ChatConversation = () => {
     const messagePayload: MessagePayload = {
       id: Date.now().toString(),
       text: message,
-      userId: user.id,
+      userId: currentFriend?.id,
     };
     console.log("Sending message", messagePayload);
-
+    setMessages((previousMessages) => [
+      ...previousMessages,
+      { ...messagePayload, hearts: [] },
+    ]);
     socket.emit("message", messagePayload);
   };
 

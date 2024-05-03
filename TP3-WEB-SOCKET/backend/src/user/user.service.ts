@@ -4,14 +4,27 @@ import { IUser } from './interface';
 
 @Injectable()
 export class UserService {
-    private users: IUser[] = [];
+  private users: IUser[] = [
+    {
+      id: '1',
+      username: 'Mehdi Fkih',
+    },
+    {
+      id: '2',
+      username: 'Houssem sahnoun',
+    },
+  ];
 
-    register(registerUserDto: RegisterUserDTO) {
-        const newUser: IUser = {
-            id: Date.now().toString(),
-            username: registerUserDto.username
-        }
-        this.users.push(newUser);
-        return newUser;
+  login(registerUserDto: RegisterUserDTO) {
+    for (const user of this.users) {
+      if (user.username === registerUserDto.username) {
+        return user;
+      }
     }
+    return null;
+  }
+
+  findAll() {
+    return this.users;
+  }
 }
