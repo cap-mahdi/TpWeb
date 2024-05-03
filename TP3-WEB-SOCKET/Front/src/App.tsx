@@ -1,8 +1,13 @@
 import { RouterProvider } from "react-router-dom";
 import { router } from "./components";
+import { WebsocketProvider } from "./contexts";
 
 function App() {
-  return <RouterProvider router={router}></RouterProvider>;
+  return (
+    <WebsocketProvider>
+      <RouterProvider router={router} />
+    </WebsocketProvider>
+  );
 }
 
 export default App;

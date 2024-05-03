@@ -134,9 +134,9 @@ export const ChatList = () => {
           className="block w-full px-4 py-2 text-sm leading-5 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
         />
       </div>
-      {people.map((person) => (
+      {people.map((person, index) => (
         <li
-          key={person.email}
+          key={index}
           className="flex justify-between gap-x-6 py-5 cursor-pointer hover:bg-gray-50 transition-colors duration-200 ease-in-out"
         >
           <div className="flex min-w-0 gap-x-4">
