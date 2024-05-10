@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Action, Cv, CvHistory, OldValueCv, User } from '../entities';
 import { Repository } from 'typeorm';
 import { CVEvent } from 'src/common/events';
+import { GetUser } from 'src/auth/decorators/user.decorator';
 @Injectable()
 export class HistoryService {
   constructor(

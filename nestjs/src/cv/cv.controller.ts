@@ -19,7 +19,7 @@ import {
   Sse,
 } from '@nestjs/common';
 import { CvService } from './cv.service';
-import { Cv, UserRole } from '../entities';
+import { Cv, UserRole, Action } from '../entities';
 import { CreateNewCvDto } from './dto/create-new-cv.dto';
 import { UpdateCvDto } from './dto/Update-cv.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -31,7 +31,11 @@ import { CvOwnerGuard } from '../auth/guards/cv-owner.guard';
 import { Observable, filter, fromEvent, map, merge } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CVEvent } from 'src/common/events';
+import { AdminGuard } from 'src/auth/guards/admin.guard';
 
+function canTrack(user: User, cv: Cv): boolean {
+  return user.role === UserRole.Admin || cv.user.id === user.id;
+}
 @Controller('cv')
 @UseGuards(AuthGuard('jwt'))
 export class CvController {
@@ -43,28 +47,28 @@ export class CvController {
   sse(@GetUser() user: User): Observable<MessageEvent> {
     const createEvent = fromEvent(this.eventEmitter, CVEvent.Add).pipe(
       filter(({ cv }) => {
-        return user.role === UserRole.Admin || cv.user.id === user.id;
+        return canTrack(user, cv);
       }),
       map(({ cv }) => {
-        return new MessageEvent('new-cv', { data: cv });
+        return new MessageEvent(Action.CREATE, { data: cv });
       }),
     );
 
     const updateEvent = fromEvent(this.eventEmitter, CVEvent.Update).pipe(
       filter(({ cv }: any) => {
-        return user.role === UserRole.Admin || cv.user.id === user.id;
+        return canTrack(user, cv);
       }),
       map(({ cv }) => {
-        return new MessageEvent('update-cv', { data: cv });
+        return new MessageEvent(Action.UPDATE, { data: cv });
       }),
     );
 
     const deleteEvent = fromEvent(this.eventEmitter, CVEvent.Delete).pipe(
       filter(({ cv }) => {
-        return user.role === UserRole.Admin || cv.user.id === user.id;
+        return canTrack(user, cv);
       }),
       map(({ cv }) => {
-        return new MessageEvent('delete-cv', { data: cv });
+        return new MessageEvent(Action.DELETE, { data: cv });
       }),
     );
     return merge(createEvent, updateEvent, deleteEvent);
